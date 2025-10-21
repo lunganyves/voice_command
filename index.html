@@ -1,10 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Voice Control</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart LumoSwitch Voice Command</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f4;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 1.8em;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 1em;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+  </style>
 </head>
 <body>
-  <h2>🎤 Speak a command: "turn on" or "turn off"</h2>
+  <h1>🎤 Voice Control for ESP32</h1>
+  <p>Say: <strong>"Turn on"</strong> or <strong>"Turn off"</strong></p>
   <button onclick="startListening()">Start Listening</button>
   <p id="status">Waiting for input...</p>
 
@@ -12,28 +57,34 @@
     const statusEl = document.getElementById('status');
 
     function startListening() {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        statusEl.textContent = "Speech recognition is not supported in this browser.";
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
       recognition.lang = 'en-US';
       recognition.start();
 
       recognition.onstart = () => {
-        statusEl.innerText = "Listening...";
+        statusEl.textContent = "🎧 Listening...";
       };
 
       recognition.onerror = (event) => {
-        statusEl.innerText = "Error: " + event.error;
+        statusEl.textContent = "❌ Error: " + event.error;
       };
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript.toLowerCase();
-        statusEl.innerText = `You said: ${transcript}`;
+        statusEl.innerText = `✅ You said: "${transcript}"`;
 
         if (transcript.includes("turn on")) {
           sendCommand("on");
         } else if (transcript.includes("turn off")) {
           sendCommand("off");
         } else {
-          statusEl.innerText += " (Unrecognized command)";
+          statusEl.innerText += "\n❓ Command not recognized.";
         }
       };
     }
@@ -42,17 +93,21 @@
       let url = "";
 
       if (command === "on") {
-        url = "https://blynk.cloud/external/api/update?token=fJVCqneWSAwDf7jG1_bJ73LKEfC-8OHT&V0=1";
+        url = "https://maker.ifttt.com/trigger/plug_on/with/key/YOUR_IFTTT_KEY";
       } else if (command === "off") {
-        url = "https://blynk.cloud/external/api/update?token=fJVCqneWSAwDf7jG1_bJ73LKEfC-8OHT&V0=0";
+        url = "https://maker.ifttt.com/trigger/plug_off/with/key/YOUR_IFTTT_KEY";
       }
 
       fetch(url)
         .then(response => {
-          statusEl.innerText += `\nCommand "${command}" sent successfully.`;
+          if (response.ok) {
+            statusEl.innerText += `\n🔗 Command "${command}" sent successfully.`;
+          } else {
+            statusEl.innerText += `\n⚠️ Failed to send command.`;
+          }
         })
         .catch(err => {
-          statusEl.innerText += `\nError sending command: ${err}`;
+          statusEl.innerText += `\n❌ Network error: ${err}`;
         });
     }
   </script>
