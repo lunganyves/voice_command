@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Voice Control</title>
+</head>
+<body>
+  <h2>🎤 Speak a command: "turn on" or "turn off"</h2>
+  <button onclick="startListening()">Start Listening</button>
+  <p id="status">Waiting for input...</p>
+
+  <script>
+    const statusEl = document.getElementById('status');
+
+    function startListening() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.start();
+
+      recognition.onstart = () => {
+        statusEl.innerText = "Listening...";
+      };
+
+      recognition.onerror = (event) => {
+        statusEl.innerText = "Error: " + event.error;
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        statusEl.innerText = `You said: ${transcript}`;
+
+        if (transcript.includes("turn on")) {
+          sendCommand("on");
+        } else if (transcript.includes("turn off")) {
+          sendCommand("off");
+        } else {
+          statusEl.innerText += " (Unrecognized command)";
+        }
+      };
+    }
+
+    function sendCommand(command) {
+      let url = "";
+
+      if (command === "on") {
+        url = "https://blynk.cloud/external/api/update?token=fJVCqneWSAwDf7jG1_bJ73LKEfC-8OHT&V0=1";
+      } else if (command === "off") {
+        url = "https://blynk.cloud/external/api/update?token=fJVCqneWSAwDf7jG1_bJ73LKEfC-8OHT&V0=0";
+      }
+
+      fetch(url)
+        .then(response => {
+          statusEl.innerText += `\nCommand "${command}" sent successfully.`;
+        })
+        .catch(err => {
+          statusEl.innerText += `\nError sending command: ${err}`;
+        });
+    }
+  </script>
+</body>
+</html>
