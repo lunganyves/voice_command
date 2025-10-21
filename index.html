@@ -93,9 +93,9 @@
       let url = "";
 
       if (command === "on") {
-        url = "https://maker.ifttt.com/trigger/plug_on/with/key/YOUR_IFTTT_KEY";
+        url = "https://blynk.cloud/external/api/update?token=fJVCqneWSAwDf7jG1_bJ73LKEfC-8OHT&V0=1";
       } else if (command === "off") {
-        url = "https://maker.ifttt.com/trigger/plug_off/with/key/YOUR_IFTTT_KEY";
+        url = "https://blynk.cloud/external/api/update?token=fJVCqneWSAwDf7jG1_bJ73LKEfC-8OHT&V0=0";
       }
 
       fetch(url)
